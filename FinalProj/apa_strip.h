@@ -27,4 +27,10 @@ void LED_Display(strip* LEDSTRIP, int numLEDS);															// Displays Stored
 
 void LED_snake(strip* LEDSTRIP, int tail, int head, int numLEDS);										// Displays LED Snake on LEDSTRIP
 
-void LED_Bounce_Pattern(int st, int en, int s_len);														// Bouncing Pattern (UTIL: LED_snake)
+uint8_t rand_Pixel(void);																				// Returns a Random Pixel Value
+
+void LED_Bounce_Pattern(strip* LEDSTRIP, int st, int en, int s_len, int strip_len);						// Bouncing Pattern (UTIL: LED_snake)
+
+void LED_Rand_Pattern(strip* LEDSTRIP, int strip_len);													// Rand Color Pattern
+
+void LED_Out2InPattern(strip* LEDSTRIP, int strip_len);													// Out to in pattern

@@ -10,6 +10,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define BTN (!(PINB & (1 << PINB7))) /* macro to check if button 1 is pressed */
+volatile int mode = 0;
+
 #define NUM_LEDS 60
 #define buffsize 15
 
@@ -31,7 +34,7 @@ volatile float Voltage;
 char VoltageBuffer[6];
 int cnt = 0;
 
-
+/*
 void InitADC0(void) {
 	DDRC &= ~(1<<DDRC0); // PC0 = ADC0 is set as input
 	// ADLAR set to 0: right adjusted to 10 bit resolution // MUX3:0 set to 0110: input voltage at ADC0
@@ -41,7 +44,7 @@ void InitADC0(void) {
 	// Start A to D conversion
 	ADCSRA |= (1<<ADSC);
 }
-/*
+
 ISR(TIMER0_COMPA_vect) {	// Trigger every 1 ms (timer ISR)
 	if (ms < 30) ms++;
 }
@@ -61,7 +64,7 @@ void InitTimer3(void) {		// ISR every 500us | 1000 * 8 / (1.6 * (10^7) ) thus 10
 	TIMSK3  = (1<<OCIE3A);	// Enable Timer 1 Compare A ISR
 	TCCR3B |=           2;
 }
-*/
+
 void GETvoltage(void) {	// Returns Voltage and Stores into VoltageBuffer
 	ADCSRA |= (1<<ADSC);
 	loop_until_bit_is_clear(ADCSRA, ADSC); // while (!(ADCSRA & (1<<ADSC) == 0));
@@ -70,7 +73,7 @@ void GETvoltage(void) {	// Returns Voltage and Stores into VoltageBuffer
 	dtostrf(Voltage, 3, 2, VoltageBuffer);
 }
 
-ISR(INT0_vect) {		   // interrupt button
+ISR(INT0_vect) {		 // interrupt button
 
 }
 void InitINT0(void) {	 // Init the interrupt BTN
@@ -78,13 +81,26 @@ void InitINT0(void) {	 // Init the interrupt BTN
 	EIMSK |= (1<<INT0);	 // EXT interrupt enable
 	EICRA |= (1<<ISC01); // Rising / Falling Edge
 }
+*/
 
+ISR(PCINT0_vect) {	// interrupt button
+	if (BTN) {		// BTN Pressed Case
+		mode++;
+		if (mode == 3) mode = 0;
+	}
+}
+void InitButton(void) {		//  Initialize the interrupt BTN
+	DDRB &= ~(1<<DDRB7);    //       DDRB7 is an input
+	PCMSK0 |= (1<<PCINT7);  //     enable B7 interrupt
+	PCICR  |= (1<<PCIE0);   // PCICR is the register for PCIE which allows interrupts for the PCINT
+}
 
 int main(void) {
 	uart_init(1);
-    InitADC0();
+	InitButton();
+    //InitADC0();
 	//InitTimer0();
-	InitINT0();
+	//InitINT0();
 	SPI_MasterInit();
 
 	sei();
@@ -96,23 +112,21 @@ int main(void) {
 	strip LEDSTRIP;
 	strip_init(&LEDSTRIP, NUM_LEDS);
 	StripCLR(&LEDSTRIP, NUM_LEDS);
-	// EXAMPLE
-/*
-	store_LED(&LEDSTRIP, 4, 0xFF, 0xFF, 0, 0);
-	store_LED(&LEDSTRIP, 5, 0xFF, 0, 0xFF, 0xFF);
-	store_LED(&LEDSTRIP, 6, 0xFF, 0xFF, 0, 0xFF);
-	LED_Display(&LEDSTRIP, NUM_LEDS);
-
-	_delay_ms(1000);
-	StripCLR(&LEDSTRIP, NUM_LEDS);
-	_delay_ms(1000);
-	store_LED(&LEDSTRIP, 30, 0xFF, 0xFF, 0, 0xFF);
-	LED_Display(&LEDSTRIP, NUM_LEDS);
-*/
-	while (1) {
-		
-	}
 	
+	int firstt = 1;
+	while (1) {
+		if (mode == 0) {
+			if (firstt) {
+				StripCLR(&LEDSTRIP, NUM_LEDS);
+				firstt = 0;
+			}
+			LED_Bounce_Pattern(&LEDSTRIP, 0, 59, 4, NUM_LEDS);
+		}
+		else if (mode == 1)		  LED_Out2InPattern(&LEDSTRIP, NUM_LEDS);
+		else						LED_Rand_Pattern(&LEDSTRIP,NUM_LEDS);
+		if (mode) firstt = 1;
+	}
+	/*
 	int arr[buffsize];
     while (0) {
 		if (cnt == buffsize) {
@@ -135,4 +149,5 @@ int main(void) {
 			FLAG = 0;
 		}
 	}
+	*/
 }

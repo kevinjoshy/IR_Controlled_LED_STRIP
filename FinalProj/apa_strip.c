@@ -3,6 +3,7 @@
 #define F_CPU 16000000UL // Tells the Clock Freq to the Compiler.
 #include <avr/io.h>      // Defines pins, ports etc.
 #include  <stdio.h>
+#include <stdlib.h>
 #include "apa_strip.h"
 #include <string.h>		 //#include <stdlib.h>
 
@@ -11,7 +12,6 @@ void SPI_LEDtransmit(uint8_t digital_data) {
 	SPDR0 = digital_data;			// Send Data
 	while(!(SPSR0 & (1<<SPIF)));	// Wait for transmission complete
 }
-
 // Initializes the LEDSTRIP Object
 void strip_init(strip* LEDSTRIP, int length) {
 	for (int i = 0; i < length; i++) {
@@ -21,7 +21,6 @@ void strip_init(strip* LEDSTRIP, int length) {
 		LEDSTRIP->B[i]			= 0;
 	}
 }
-
 // Start Transmission Signal
 void LED_StartSignal(void) {
 	SPI_LEDtransmit(0);
@@ -54,14 +53,17 @@ void StripCLR(strip* LEDSTRIP, int length) {
 }
 // Store the ith index on LEDSTRIP
 void store_LED(strip* LEDSTRIP, int i, uint8_t Brightness, uint8_t R, uint8_t G, uint8_t B) {
-	LEDSTRIP->Brightness[i] = Brightness;
-	LEDSTRIP->R[i] = R;
-	LEDSTRIP->G[i] = G;
-	LEDSTRIP->B[i] = B;
+	if ((i >= 0) && (i < NUM_LEDS)) {
+		LEDSTRIP->Brightness[i] = Brightness;
+		LEDSTRIP->R[i] = R;
+		LEDSTRIP->G[i] = G;
+		LEDSTRIP->B[i] = B;
+	}
+	else printf("Invalid Index\n");
 }
 // Displays Stored Info to LEDSTRIP
 void LED_Display(strip* LEDSTRIP, int numLEDS) {
-	int disp;
+	int disp = 0;
 	int notblank = 0;
 	LED_StartSignal();
 	for (int i = 0; i < numLEDS; i++) {
@@ -69,6 +71,7 @@ void LED_Display(strip* LEDSTRIP, int numLEDS) {
 		if (disp) {
 			LED_ByteSend(disp, LEDSTRIP->R[i], LEDSTRIP->G[i], LEDSTRIP->B[i]);
 			notblank = 1;
+			
 		}
 		else {
 			LED_ByteSend(0xFF, 0, 0, 0);
@@ -78,28 +81,103 @@ void LED_Display(strip* LEDSTRIP, int numLEDS) {
 }
 // Displays LED Snake on LEDSTRIP
 void LED_snake(strip* LEDSTRIP, int tail, int head, int numLEDS) {
-	int Brightness = 1;
-	int R = 1;
+	int Brightness = 0xFF;
+	int R = 0xFF;
 	int G = 0;
 	int B = 0;
-	StripCLR(LEDSTRIP, numLEDS);
-	LED_StartSignal();
 
 	for (int i = 0; i < NUM_LEDS; i++) {
 		if (i >= tail && i < head) {
-			LED_ByteSend(0xFF,1,0,0);	// Pattern
-			store_LED(LEDSTRIP, i, Brightness, R, G, B);
+			store_LED(LEDSTRIP, i, Brightness, R, G, B);	// Store the color
+			
 		}
 		else {
-			LED_ByteSend(0xFF,0,0,0);	// Clears LED[i]
+			store_LED(LEDSTRIP, i, Brightness, 0, 0, 0);	// Clears LED[i]
 		}
 	}
 
-	LED_EndSignal();
+	LED_Display(LEDSTRIP, NUM_LEDS);
 }
-/*
-void LED_Bounce_Pattern(int st, int en, int s_len) {
-	for (int j = 0; j < s_len; j++) {
+// Returns a Random Pixel Value
+uint8_t rand_Pixel(void) {
+	uint8_t Pixel = rand() % (0xFF + 1);
+	return Pixel;
+}
+// Creates Bouncing pattern between st and en (LED index 0 -> (NUM_LEDS - 1)). s-len::Snake Length
+void LED_Bounce_Pattern(strip* LEDSTRIP, int st, int en, int s_len, int strip_len) {
+	int Brightness = 0xFF;
+	int R = rand_Pixel();
+	int G = rand_Pixel();
+	int B = rand_Pixel();
+	int path_len = en - st;
+	// Get snake moving forward
+	for (int i = 0; i < path_len; i++) {
+		// Populating Snake
+		for (int j = 0; j < s_len; j++) {
+			if ((j+i+st) <= en) {
+				store_LED(LEDSTRIP, i+j+st, Brightness, R, G, B);	// Start at st and goes to that en
+				LED_Display(LEDSTRIP, strip_len);
+			}
+		}
+		// End of Snake
+		if ((i + st) <= (en - s_len)) {
+			store_LED(LEDSTRIP, i+st, Brightness, 0, 0, 0);
+		}
+	}
+	// Get snake moving backward
+	for (int i = 0; (-1)*i < path_len; i--) {
+		// Populating Snake
+		for (int j = 0; (-1)*j < s_len; j--) {
+			if (i+j+en >= st) {
+				store_LED(LEDSTRIP, i+j+en, Brightness, R, G, B);	// Start at en and goes to that st
+				LED_Display(LEDSTRIP, strip_len);
+			}
+		}
+		// End of Snake
+		if ((i + en) >= (st + s_len)) {
+			store_LED(LEDSTRIP, i+en, Brightness, 0, 0, 0);
+		}
+	}
+	
+}
+// Creates Completely Random Pattern on LEDSTRIP
+void LED_Rand_Pattern(strip* LEDSTRIP, int strip_len) {
+	for (int i = 0; i < strip_len; i++) {
+		LEDSTRIP->Brightness[i] = rand_Pixel();
+		LEDSTRIP->R[i]			= rand_Pixel();
+		LEDSTRIP->G[i]			= rand_Pixel();
+		LEDSTRIP->B[i]			= rand_Pixel();
+	}
+	LED_Display(LEDSTRIP, strip_len);
+}
+// Out to in pattern
+void LED_Out2InPattern(strip* LEDSTRIP, int strip_len) {
+	int left  =  0;
+	int right = 59;
+	uint8_t Brightness = 0xFF;
+	uint8_t R = rand_Pixel();
+	uint8_t G = rand_Pixel();
+	uint8_t B = rand_Pixel();
+	while (1) {	// Out 2 In
+		store_LED(LEDSTRIP, left, Brightness, R,  G,  B);
+		store_LED(LEDSTRIP, right, Brightness,  R,  G,  B);
+		left++;
+		right--;
+		LED_Display(LEDSTRIP, strip_len);
+		if (left == 29) break;
 		
 	}
-}*/
+	left  = 29;
+	right = 30;
+	R = rand_Pixel();
+	G = rand_Pixel();
+	B = rand_Pixel();
+	while (1) {	// In 2 Out
+		store_LED(LEDSTRIP, left, Brightness, R,  G,  B);
+		store_LED(LEDSTRIP, right, Brightness,  R,  G,  B);
+		left --;
+		right++;
+		LED_Display(LEDSTRIP, strip_len);
+		if (left == 0) break;
+	}
+}
