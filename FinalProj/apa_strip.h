@@ -31,6 +31,6 @@ uint8_t rand_Pixel(void);																				// Returns a Random Pixel Value
 
 void LED_Bounce_Pattern(strip* LEDSTRIP, int st, int en, int s_len, int strip_len);						// Bouncing Pattern (UTIL: LED_snake)
 
-void LED_Rand_Pattern(strip* LEDSTRIP, int strip_len);													// Rand Color Pattern
+void LED_Rand_Pattern(strip* LEDSTRIP, int strip_len, int delay);										// Rand Color Pattern
 
-void LED_Out2InPattern(strip* LEDSTRIP, int strip_len);													// Out to in pattern
+void LED_Out2InPattern(strip* LEDSTRIP, int strip_len, int delay);										// Out to in pattern
