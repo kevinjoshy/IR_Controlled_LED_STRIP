@@ -1,6 +1,6 @@
 /* apa_strip.h | Created: 11/20/2021 5:56:26 PM | Author: Kevin */
 
-#define NUM_LEDS 60
+#define NUM_LEDS 60 // 1m APA strip has 60 addressable LEDs
 
 typedef struct {
 	uint8_t Brightness[NUM_LEDS];

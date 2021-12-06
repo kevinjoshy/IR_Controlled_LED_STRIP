@@ -5,7 +5,6 @@
 #include  <stdio.h>
 #include <stdlib.h>
 #include "apa_strip.h"
-#include <string.h>		 //#include <stdlib.h>
 
 #define __DELAY_BACKWARD_COMPATIBLE__
 #include <util/delay.h>
@@ -113,7 +112,7 @@ void LED_Bounce_Pattern(strip* LEDSTRIP, int st, int en, int s_len, int strip_le
 	int G = rand_Pixel();
 	int B = rand_Pixel();
 	int path_len = en - st;
-	int delay = 70 + (int)((float)(10 - s_len) * (3000.00 / 10.00));
+	int delay = 10;
 	// Get snake moving forward
 	for (int i = 0; i < path_len; i++) {
 		// Populating Snake
@@ -121,9 +120,9 @@ void LED_Bounce_Pattern(strip* LEDSTRIP, int st, int en, int s_len, int strip_le
 			if ((j+i+st) <= en) {
 				store_LED(LEDSTRIP, i+j+st, Brightness, R, G, B);	// Start at st and goes to that en
 			}
-			LED_Display(LEDSTRIP, strip_len);
-			_delay_us(delay);
 		}
+		LED_Display(LEDSTRIP, strip_len);
+		_delay_ms(delay);
 		// End of Snake
 		if ((i + st) <= (en - s_len)) {
 			store_LED(LEDSTRIP, i+st, Brightness, 0, 0, 0);
@@ -136,9 +135,9 @@ void LED_Bounce_Pattern(strip* LEDSTRIP, int st, int en, int s_len, int strip_le
 			if (i+j+en >= st) {
 				store_LED(LEDSTRIP, i+j+en, Brightness, R, G, B);	// Start at en and goes to that st
 			}
-			LED_Display(LEDSTRIP, strip_len);
-			_delay_us(delay);
 		}
+		LED_Display(LEDSTRIP, strip_len);
+		_delay_ms(delay);
 		// End of Snake
 		if ((i + en) >= (st + s_len)) {
 			store_LED(LEDSTRIP, i+en, Brightness, 0, 0, 0);
