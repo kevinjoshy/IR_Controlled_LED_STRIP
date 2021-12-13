@@ -1,7 +1,9 @@
-/* apa_strip.h | Created: 11/20/2021 5:56:26 PM | Author: Kevin */
+/* apa_strip.h | Created: 11/20/2021 5:56:26 PM | Author: Kevin Joshy */
 
-#define NUM_LEDS 60 // 1m APA strip has 60 addressable LEDs
+// 1m APA strip has 60 addressable LEDs
+#define NUM_LEDS 60
 
+// Data Structure for LED STRIP information
 typedef struct {
 	uint8_t Brightness[NUM_LEDS];
 	uint8_t			 R[NUM_LEDS];
@@ -9,28 +11,41 @@ typedef struct {
 	uint8_t			 B[NUM_LEDS];
 } strip;
 
-void SPI_LEDtransmit(uint8_t digital_data);		// Transmits 8 bits or 2 bytes on SPI0 using SPDR0 Register
+// Transmits 8 bits or 2 bytes on SPI0 using SPDR0 Register
+void SPI_LEDtransmit(uint8_t digital_data);
 
-void strip_init(strip* LEDSTRIP, int length);	// Initializes the LEDSTRIP Object
+// Initializes the LEDSTRIP Object
+void strip_init(strip* LEDSTRIP, int length);
 
-void LED_StartSignal(void);						// Start Transmission Signal
+// Start Transmission Signal
+void LED_StartSignal(void);
 
-void LED_EndSignal(void);						// End Transmission Signal
+// End Transmission Signal
+void LED_EndSignal(void);
 
-void LED_ByteSend(uint8_t brightness, uint8_t R, uint8_t G, uint8_t B);									// Sends bytes needed for a LED with brightness and RGB Values
+// Sends bytes needed for a LED with brightness and RGB Values
+void LED_ByteSend(uint8_t brightness, uint8_t R, uint8_t G, uint8_t B);
 
-void StripCLR(strip* LEDSTRIP, int length);																// Clears LEDSTRIP
+// Clears LEDSTRIP
+void StripCLR(strip* LEDSTRIP, int length);
 
-void store_LED(strip* LEDSTRIP, int i, uint8_t Brightness, uint8_t R, uint8_t G, uint8_t B);			// Set the ith index on LEDSTRIP
+// Set the ith index on LEDSTRIP
+void store_LED(strip* LEDSTRIP, int i, uint8_t Brightness, uint8_t R, uint8_t G, uint8_t B);
 
-void LED_Display(strip* LEDSTRIP, int numLEDS);															// Displays Stored Info to LEDSTRIP
+// Displays Stored Info to LEDSTRIP
+void LED_Display(strip* LEDSTRIP, int numLEDS);
 
-void LED_snake(strip* LEDSTRIP, int tail, int head, int numLEDS);										// Displays LED Snake on LEDSTRIP
+// Displays LED Snake on LEDSTRIP
+void LED_snake(strip* LEDSTRIP, int tail, int head, int numLEDS);
 
-uint8_t rand_Pixel(void);																				// Returns a Random Pixel Value
+// Returns a Random Pixel Value
+uint8_t rand_Pixel(void);
 
-void LED_Bounce_Pattern(strip* LEDSTRIP, int st, int en, int s_len, int strip_len);						// Bouncing Pattern (UTIL: LED_snake)
+// Bouncing Pattern (UTIL: LED_snake)
+void LED_Bounce_Pattern(strip* LEDSTRIP, int st, int en, int s_len, int strip_len);
 
-void LED_Rand_Pattern(strip* LEDSTRIP, int strip_len, int delay);										// Rand Color Pattern
+// Rand Color Pattern
+void LED_Rand_Pattern(strip* LEDSTRIP, int strip_len, int delay);
 
-void LED_Out2InPattern(strip* LEDSTRIP, int strip_len, int delay);										// Out to in pattern
+// Out to in pattern
+void LED_Out2InPattern(strip* LEDSTRIP, int strip_len, int delay);
