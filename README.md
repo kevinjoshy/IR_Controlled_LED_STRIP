@@ -1,4 +1,4 @@
-# RF_Controlled_LED_STRIP
+# IR_Controlled_LED_STRIP
 APA102C LED Strip Controlled with TSOP38238 IR Receiver Module.
 
 IR Signal sent with COM-14865 Infrared Remote Control
